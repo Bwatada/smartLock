@@ -1,3 +1,4 @@
 node_modules/**/*
 .expo/*
 npm-debug.*
+metro-cache-789d4261cc1024594412af829b8a0ab493e199e4/*
