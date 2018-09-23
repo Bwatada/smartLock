@@ -38,8 +38,8 @@ client.on('connectionLost', (responseObject) => {
 });
 client.on('messageReceived', (message) => {
   var msg = message.payloadString;
-  stAtus = msg == 'true';
-  if (!stAtus){
+  if (msg == 'false'){
+    stAtus = false;
     Alert.alert(
       'Your bike has been removed from its lock!',
       'If this was you, ignore this message.',
@@ -49,7 +49,8 @@ client.on('messageReceived', (message) => {
       ],
       { cancelable: false }
     )
-  } else {
+  } else if(msg == 'true'){
+    stAtus = true;
     Alert.alert(
       'Your bike has been placed in its lock!',
       'You can track the status of your bike from your phone..',
@@ -242,6 +243,9 @@ export default class App extends React.Component {
    }
    submit() {
      if(this.state.selected.free > 0) {
+       var message = new Message('ready')
+       message.destinationName = 'elevate/status'
+       client.send(message)
       if(!this.state.timerStart) {
         this.toggleTimer();
       }
@@ -332,24 +336,39 @@ getFormattedTime(time) {
 contact() {
   stAtus = 'empty';
   this.setState({
-    state: this.state
-  })
+    reserved: false,
+    selected: {
+    free: 0,
+    title: null,
+    image: null,
+  }})
+  this.resetTimer()
+  this.resetStopwatch()
   console.log(stAtus);
 }
 unlock(){
-  console.log('open sesame', this.state.timerStart);
-  if (this.state.timerStart && this.state.reserved){
-    this.toggleTimer();
-   }
-   if (!this.state.stopwatchStart) {
-     this.toggleStopwatch();
-   }
-   if(stAtus != 'empty'){
-     stAtus = !stAtus;
-   } else if (stAtus == 'empty') {
-     stAtus = true;
-   }
+  // console.log('open sesame', this.state.timerStart);
+  // if (this.state.timerStart && this.state.reserved){
+  //   this.toggleTimer();
+  //  }
+  //  if (!this.state.stopwatchStart) {
+  //    this.toggleStopwatch();
+  //  }
+  //  if(stAtus != 'empty'){
+  //    stAtus = !stAtus;
+  //  } else if (stAtus == 'empty') {
+  //    stAtus = true;
+  //  }
    this.setState({state: this.state});
+   if (this.state.timerStart && this.state.reserved){
+      this.toggleTimer();
+      
+     }
+     if (!this.state.stopwatchStart) {
+       this.toggleStopwatch();
+     } else {
+      this.resetStopwatch();
+     }
 }
 componentDidMount() {
     this.refresh();
@@ -418,7 +437,17 @@ componentDidMount() {
         'Your reserved time has expired!',
         'Your reservation has been removed.',
         [
-          {text: 'Darn', onPress: () => {stAtus = 'empty'; this.setState({state: this.state})}},
+          {text: 'Darn', onPress: () => {stAtus = 'empty'; this.resetStopwatch();
+          this.resetTimer();
+          this.setState({
+            reserved: false,
+            selected: {
+            free: 0,
+            title: null,
+            image: null,
+            }
+          })
+        }},
           
         ],
         { cancelable: true }
@@ -482,11 +511,11 @@ componentDidMount() {
                         </View>
                       </Col>
                   </Grid>
-                    <Button title="Unlock/Lock" buttonStyle={{
+                    <Button title="Confirm" buttonStyle={{
                       backgroundColor: "#009688",
                       width:"100%",
                     }} onPress={() => { this.unlock() }}></Button>
-                    <Button title="Contact" buttonStyle={{
+                    <Button title="Remove Bike" buttonStyle={{
                       backgroundColor: "#009688",
                       width:"100%",
                     }} onPress={() => { this.contact() }}></Button>
