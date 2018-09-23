@@ -3,7 +3,7 @@ import { Font } from "expo";
 import { Card, Content, Container, Header, Tab, Tabs, TabHeading, Icon, StyleProvider, Toast } from 'native-base';
 import { Button } from 'react-native-elements'
 import { Col, Row, Grid } from 'react-native-easy-grid';
-import { AsyncStorage, StyleSheet, View, Dimensions, Text, Alert} from 'react-native';
+import { AsyncStorage, StyleSheet, View, Dimensions, Text, Alert, TouchableHighlight} from 'react-native';
 import Dash from './Dash.js';
 import Settings from './Settings.js';
 import Stats from './Stats.js';
@@ -11,11 +11,13 @@ import LoginForm from './LoginForm.js';
 import MapView, { Marker, ProviderPropType } from 'react-native-maps';
 import { Image } from 'react-native';
 
+import { Stopwatch, Timer } from 'react-native-stopwatch-timer'
+
 import { Client, Message } from 'react-native-paho-mqtt';
 
 //MQTT CLIENT
 // Create a client instance
-
+const statusImage = require('./src/images/el.jpg');
 const myStorage = {
   setItem: (key, item) => {
     myStorage[key] = item;
@@ -25,7 +27,7 @@ const myStorage = {
     delete myStorage[key];
   },
 };
-
+const stAtus = 'empty';
 const client = new Client({ uri: 'ws://104.238.164.118:8083/mqtt/', clientId: 'clientId', storage: myStorage });
  
 // set event handlers
@@ -35,20 +37,31 @@ client.on('connectionLost', (responseObject) => {
   }
 });
 client.on('messageReceived', (message) => {
-	var msg = message.payloadString;
-	msg = msg.split(",");
-	wp = msg[0];
-	hp = msg[1];
-
-	xp = msg[2];
-	yp = msg[3];
-
-	x = xp;
-	y = yp;
-
-
+  var msg = message.payloadString;
+  stAtus = msg == 'true';
+  if (!stAtus){
+    Alert.alert(
+      'Your bike has been removed from its lock!',
+      'If this was you, ignore this message.',
+      [
+        {text: 'OK', onPress: () => console.log('Ask me later pressed')},
+        
+      ],
+      { cancelable: false }
+    )
+  } else {
+    Alert.alert(
+      'Your bike has been placed in its lock!',
+      'You can track the status of your bike from your phone..',
+      [
+        {text: 'OK', onPress: () => console.log('Ask me later pressed')},
+        
+      ],
+      { cancelable: false }
+    )
+      
+  }
   console.log(message.payloadString);
-  console.log(msg);
 });
  
 // connect the client
@@ -56,7 +69,7 @@ client.connect()
   .then(() => {
     // Once a connection has been made, make a subscription and send a message.
     console.log('onConnect');
-    return client.subscribe('bot/location');
+    return client.subscribe('elevate/status');
   })
   .then(() => {
     console.log('connected');
@@ -94,7 +107,12 @@ export default class App extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      showToast: false,
+      //SHOW STOPWATCH
+      timerStart: false,
+      stopwatchStart: false,
+      totalDuration: 10000,
+      timerReset: false,
+      stopwatchReset: false,
       //MAP
       latitude: 43.659758,
       longitude: -79.388866,
@@ -159,7 +177,7 @@ export default class App extends React.Component {
           rack: "No rack selected",
           reserved: false,
 
-
+          
       //APP
       selectedIndex: 1,
       loggedIn:true,
@@ -172,6 +190,12 @@ export default class App extends React.Component {
       reserved: null,
       detected: null,
     };
+
+    //BIND TIMER
+    this.toggleTimer = this.toggleTimer.bind(this);
+    this.resetTimer = this.resetTimer.bind(this);
+    this.toggleStopwatch = this.toggleStopwatch.bind(this);
+    this.resetStopwatch = this.resetStopwatch.bind(this);
     this.updateIndex = this.updateIndex.bind(this)
     global.reserved = false
   }
@@ -218,6 +242,13 @@ export default class App extends React.Component {
    }
    submit() {
      if(this.state.selected.free > 0) {
+      if(!this.state.timerStart) {
+        this.toggleTimer();
+      }
+      if(this.state.stopWatchStart){
+        this.toggleStopwatch();
+        this.resetStopwatch();
+      }
        this.setState(
          {reserved: true,
         detected: true
@@ -227,7 +258,7 @@ export default class App extends React.Component {
           'Bike Reserved!',
           'Isn\'t that great?',
           [
-            {text: 'Yeah, really great!', onPress: () => console.log('Ask me later pressed')},
+            {text: 'Yeah, really great!', onPress: () => {stAtus = 'empty'; this.setState({state: this.state})}},
             {text: 'Meh', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
             {text: 'Not Really', onPress: () => console.log('OK Pressed')},
           ],
@@ -277,8 +308,48 @@ export default class App extends React.Component {
         }   
       })
 }
+
+//STOPWATCH METHODS
+toggleTimer() {
+  this.setState({timerStart: !this.state.timerStart, timerReset: false});
+}
+
+resetTimer() {
+  this.setState({timerStart: false, timerReset: true});
+}
+
+toggleStopwatch() {
+  this.setState({stopwatchStart: !this.state.stopwatchStart, stopwatchReset: false});
+}
+
+resetStopwatch() {
+  this.setState({stopwatchStart: false, stopwatchReset: true});
+}
+
+getFormattedTime(time) {
+    this.currentTime = time;
+};
+contact() {
+  stAtus = 'empty';
+  this.setState({
+    state: this.state
+  })
+  console.log(stAtus);
+}
 unlock(){
-  console.log('open sesame')
+  console.log('open sesame', this.state.timerStart);
+  if (this.state.timerStart && this.state.reserved){
+    this.toggleTimer();
+   }
+   if (!this.state.stopwatchStart) {
+     this.toggleStopwatch();
+   }
+   if(stAtus != 'empty'){
+     stAtus = !stAtus;
+   } else if (stAtus == 'empty') {
+     stAtus = true;
+   }
+   this.setState({state: this.state});
 }
 componentDidMount() {
     this.refresh();
@@ -320,16 +391,21 @@ componentDidMount() {
         var detected = this.state.detected || "No rack occupied";
         var status = false;
         var comment = "No rack occupied";
-        var statusImage = require('./src/images/el.jpg');
+        
         if (this.state.detected != null) {
-            status = true;
-            if(this.state.detected) {
+            if(stAtus == true) {
+                console.log('stat', stAtus)
                 comment = "Bike Detected";
                 statusImage = require('./src/images/check.png');
-            } else {
+            } else if (!stAtus){
+                console.log('stat', stAtus)
                 comment = "Bike Not Detected!";
                 statusImage = require('./src/images/redx.png');
-            } 
+            } else {
+              console.log('stat', stAtus)
+              comment = "No rack occupied";
+              statusImage = require('./src/images/el.jpg');
+            }
         }
     //MAP VARIABLES
     var markers = this.state.markers || [];
@@ -337,7 +413,17 @@ componentDidMount() {
     var title = this.state.selected.title || "No location selected";
     var image = this.state.selected.image || require('./src/images/BS.png');
     var reserved = this.state.reserved;
-
+    var handleTimerComplete = () => {
+      Alert.alert(
+        'Your reserved time has expired!',
+        'Your reservation has been removed.',
+        [
+          {text: 'Darn', onPress: () => {stAtus = 'empty'; this.setState({state: this.state})}},
+          
+        ],
+        { cancelable: true }
+      )
+    }
     const buttons = ['Hello', 'World', 'Buttons']
     const { selectedIndex } = this.state
     if(this.state.loggedIn){
@@ -452,9 +538,20 @@ componentDidMount() {
           </View>
             </Tab>
             <Tab heading={ <TabHeading><Icon type="MaterialIcons" name="timer" /></TabHeading>}>
-              <View>
-                <Text>Time Elapsed: </Text>
-
+              <View style={{justifyContent:"center", width: "100%", height:"100%"}}>
+                <Text style={{fontSize: 30, alignSelf:"center"}}>Time Elapsed: </Text>
+                <Stopwatch laps msecs start={this.state.stopwatchStart}
+                  reset={this.state.stopwatchReset}
+                  getTime={this.getFormattedTime}
+                  options = {options}
+                   />
+                <Text style={{fontSize: 25, alignSelf:"center"}}>Time Before Reservation Expires: </Text>
+                <Timer totalDuration={this.state.totalDuration} msecs start={this.state.timerStart}
+                  reset={this.state.timerReset}
+                  handleFinish={handleTimerComplete}
+                  getTime={this.getFormattedTime}
+                  options = {options}
+                   />
               </View>
             </Tab>
           </Tabs>
@@ -507,3 +604,18 @@ const styles = StyleSheet.create({
     backgroundColor:"green"
   },
 });
+
+const options = {
+  container: {
+    alignSelf: "center",
+    backgroundColor: '#000',
+    padding: 5,
+    borderRadius: 5,
+    width: 220,
+  },
+  text: {
+    fontSize: 30,
+    color: '#FFF',
+    marginLeft: 7,
+  }
+};
