@@ -1,0 +1,320 @@
+__d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _react2 = _require(_dependencyMap[0], "react");
+
+  var _react3 = _interopRequireDefault(_react2);
+
+  var _index = _require(_dependencyMap[1], "./node_modules/react-transform-hmr/lib/index.js");
+
+  var _index2 = _interopRequireDefault(_index);
+
+  var _jsxFileName = "/home/brandon/Documents/smartLock/Map.js";
+
+  var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+  var _reactNativeMaps = _require(_dependencyMap[2], "react-native-maps");
+
+  var _reactNativeMaps2 = _interopRequireDefault(_reactNativeMaps);
+
+  var _reactNative = _require(_dependencyMap[3], "react-native");
+
+  var _nativeBase = _require(_dependencyMap[4], "native-base");
+
+  var _reducers = _require(_dependencyMap[5], "./ reducers");
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var _components = {
+    Map: {
+      displayName: "Map"
+    }
+  };
+
+  var _node_modulesReactTransformHmrLibIndexJs2 = (0, _index2.default)({
+    filename: "/home/brandon/Documents/smartLock/Map.js",
+    components: _components,
+    locals: [module],
+    imports: [_react3.default]
+  });
+
+  function _wrapComponent(id) {
+    return function (Component) {
+      return _node_modulesReactTransformHmrLibIndexJs2(Component, id);
+    };
+  }
+
+  var _Dimensions$get = _reactNative.Dimensions.get('window'),
+      width = _Dimensions$get.width,
+      height = _Dimensions$get.height;
+
+  var ASPECT_RATIO = width / height;
+  var LATITUDE_DELTA = 0.0922;
+  var LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  var Images = [{
+    uri: "https://i.imgur.com/LntVN6B.jpg"
+  }, {
+    uri: "https://i.imgur.com/N7rlQYt.jpg"
+  }, {
+    uri: "https://i.imgur.com/UDrH0wm.jpg"
+  }, {
+    uri: "https://i.imgur.com/Ka8kNST.jpg"
+  }];
+
+  var Map = _wrapComponent("Map")(function (_React$Component) {
+    _inherits(Map, _React$Component);
+
+    function Map(props) {
+      _classCallCheck(this, Map);
+
+      var _this = _possibleConstructorReturn(this, (Map.__proto__ || Object.getPrototypeOf(Map)).call(this, props));
+
+      _this.state = {
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+        error: null,
+        markers: [{
+          coordinate: {
+            latitude: 43.7860579,
+            longitude: -79.349437
+          },
+          title: "Great Bike Rack",
+          description: "Slots Available: 3",
+          free: 3,
+          capacity: 6,
+          image: Images[0],
+          color: "#E7E7E7"
+        }],
+        selected: {
+          free: 0,
+          title: null,
+          image: null
+        },
+        rack: "No rack selected",
+        reserved: false
+      };
+      return _this;
+    }
+
+    _createClass(Map, [{
+      key: "componentWillMount",
+      value: function componentWillMount() {
+        var _this2 = this;
+
+        _reactNative.AsyncStorage.getItem('selected', function (err, result) {
+          _this2.setState({
+            selected: JSON.parse(result)
+          });
+        });
+
+        _reactNative.AsyncStorage.getItem('reserved', function (err, result) {
+          console.log(JSON.parse(result).status);
+
+          _this2.setState({
+            reserved: JSON.parse(result).status
+          });
+        });
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+          _this2.setState({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA
+          });
+
+          _this2.forceUpdate();
+        }, function (error) {
+          return _this2.setState({
+            error: error.message
+          });
+        });
+      }
+    }, {
+      key: "onMarkerPress",
+      value: function onMarkerPress(marker) {
+        this.setState({
+          selected: marker
+        });
+      }
+    }, {
+      key: "submit",
+      value: function submit() {
+        if (this.state.selected.free > 0) {
+          this.setState({
+            reserved: true
+          });
+          console.log('you failure', this.state.reserved);
+        } else {
+          console.log("rejected!");
+        }
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var _this3 = this;
+
+        var markers = this.state.markers || [];
+        var free = this.state.selected.free || "No location selected";
+        var title = this.state.selected.title || "No location selected";
+        var image = this.state.selected.image || "";
+        var reserved = this.state.reserved;
+        return _react3.default.createElement(
+          _reactNative.View,
+          {
+            __source: {
+              fileName: _jsxFileName,
+              lineNumber: 99
+            }
+          },
+          _react3.default.createElement(
+            _reactNativeMaps2.default,
+            {
+              ref: function ref(map) {
+                _this3.map = map;
+              },
+              style: styles.map,
+              pitchEnabled: false,
+              rotateEnabled: false,
+              initialRegion: {
+                latitude: this.state.latitude,
+                longitude: this.state.longitude,
+                latitudeDelta: LATITUDE_DELTA,
+                longitudeDelta: LONGITUDE_DELTA
+              },
+              showsUserLocation: true,
+              __source: {
+                fileName: _jsxFileName,
+                lineNumber: 100
+              }
+            },
+            markers.map(function (marker, index) {
+              return _react3.default.createElement(_reactNativeMaps2.default.Marker, {
+                key: index,
+                coordinate: marker.coordinate,
+                title: marker.title,
+                description: marker.description,
+                showCallout: true,
+                pinColor: 'green',
+                onPress: function onPress() {
+                  _this3.onMarkerPress(marker);
+                },
+                __source: {
+                  fileName: _jsxFileName,
+                  lineNumber: 116
+                }
+              });
+            })
+          ),
+          _react3.default.createElement(
+            _nativeBase.Card,
+            {
+              style: styles.submit,
+              __source: {
+                fileName: _jsxFileName,
+                lineNumber: 129
+              }
+            },
+            _react3.default.createElement(
+              _reactNative.Text,
+              {
+                __source: {
+                  fileName: _jsxFileName,
+                  lineNumber: 130
+                }
+              },
+              "Spots Available: ",
+              free
+            ),
+            _react3.default.createElement(
+              _reactNative.Text,
+              {
+                __source: {
+                  fileName: _jsxFileName,
+                  lineNumber: 131
+                }
+              },
+              "Location: ",
+              title
+            ),
+            _react3.default.createElement(
+              _reactNative.Text,
+              {
+                __source: {
+                  fileName: _jsxFileName,
+                  lineNumber: 132
+                }
+              },
+              "Reserved: ",
+              reserved ? 'yes' : 'no'
+            ),
+            _react3.default.createElement(_reactNative.Image, {
+              source: image,
+              resizeMode: "cover",
+              __source: {
+                fileName: _jsxFileName,
+                lineNumber: 133
+              }
+            }),
+            _react3.default.createElement(
+              _nativeBase.Button,
+              {
+                primary: true,
+                style: styles.subButton,
+                onPress: function onPress() {
+                  _this3.submit();
+                },
+                __source: {
+                  fileName: _jsxFileName,
+                  lineNumber: 135
+                }
+              },
+              _react3.default.createElement(
+                _reactNative.Text,
+                {
+                  __source: {
+                    fileName: _jsxFileName,
+                    lineNumber: 135
+                  }
+                },
+                "Reserve"
+              )
+            )
+          )
+        );
+      }
+    }]);
+
+    return Map;
+  }(_react3.default.Component));
+
+  exports.default = Map;
+
+  var styles = _reactNative.StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    map: {
+      alignSelf: 'center',
+      width: "100%",
+      height: "70%"
+    },
+    submit: {
+      height: "30%"
+    },
+    subButton: {
+      alignSelf: "center"
+    }
+  });
+});

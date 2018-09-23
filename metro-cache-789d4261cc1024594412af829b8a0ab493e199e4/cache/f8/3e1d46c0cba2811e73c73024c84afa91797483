@@ -1,0 +1,12 @@
+__d(function (global, _require, module, exports, _dependencyMap) {
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var marker = exports.marker = function marker() {
+        return {
+            type: 'Data',
+            payload: "sonuva gun"
+        };
+    };
+});

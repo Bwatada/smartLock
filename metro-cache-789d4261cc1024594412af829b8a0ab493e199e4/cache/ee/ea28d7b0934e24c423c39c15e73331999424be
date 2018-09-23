@@ -1,0 +1,196 @@
+__d(function (global, _require, module, exports, _dependencyMap) {
+    "use strict";
+
+    var _react2 = _require(_dependencyMap[0], "react");
+
+    var _react3 = _interopRequireDefault(_react2);
+
+    var _index = _require(_dependencyMap[1], "./../react-transform-hmr/lib/index.js");
+
+    var _index2 = _interopRequireDefault(_index);
+
+    var _jsxFileName = "/home/brandon/Documents/smartLock/node_modules/react-native-timer-countdown/index.js";
+
+    var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+    function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+    var _components = {
+        TimerCountdown: {
+            displayName: "TimerCountdown"
+        }
+    };
+
+    var _reactTransformHmrLibIndexJs2 = (0, _index2.default)({
+        filename: "/home/brandon/Documents/smartLock/node_modules/react-native-timer-countdown/index.js",
+        components: _components,
+        locals: [module],
+        imports: [_react3.default]
+    });
+
+    function _wrapComponent(id) {
+        return function (Component) {
+            return _reactTransformHmrLibIndexJs2(Component, id);
+        };
+    }
+
+    var __importStar = this && this.__importStar || function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k in mod) {
+            if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+        }
+        result["default"] = mod;
+        return result;
+    };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var React = __importStar(_require(_dependencyMap[0], "react"));
+
+    var react_native_1 = _require(_dependencyMap[2], "react-native");
+
+    var TimerCountdown = _wrapComponent("TimerCountdown")(function (_React$Component) {
+        _inherits(TimerCountdown, _React$Component);
+
+        function TimerCountdown() {
+            _classCallCheck(this, TimerCountdown);
+
+            var _this = _possibleConstructorReturn(this, (TimerCountdown.__proto__ || Object.getPrototypeOf(TimerCountdown)).apply(this, arguments));
+
+            _this.mounted = false;
+            _this.state = {
+                secondsRemaining: _this.props.initialSecondsRemaining,
+                timeoutId: null,
+                previousSeconds: null
+            };
+
+            _this.tick = function () {
+                var currentSeconds = Date.now();
+                var dt = _this.state.previousSeconds ? currentSeconds - _this.state.previousSeconds : 0;
+                var interval = _this.props.interval;
+                var intervalSecondsRemaing = interval - dt % interval;
+                var timeout = intervalSecondsRemaing;
+
+                if (intervalSecondsRemaing < interval / 2.0) {
+                    timeout += interval;
+                }
+
+                var secondsRemaining = Math.max(_this.state.secondsRemaining - dt, 0);
+                var isComplete = _this.state.previousSeconds && secondsRemaining <= 0;
+
+                if (_this.mounted) {
+                    if (_this.state.timeoutId) {
+                        clearTimeout(_this.state.timeoutId);
+                    }
+
+                    _this.setState({
+                        timeoutId: isComplete ? null : setTimeout(_this.tick, timeout),
+                        previousSeconds: currentSeconds,
+                        secondsRemaining: secondsRemaining
+                    });
+                }
+
+                if (isComplete) {
+                    if (_this.props.onTimeElapsed) {
+                        _this.props.onTimeElapsed();
+                    }
+
+                    return;
+                }
+
+                if (_this.props.onTick) {
+                    _this.props.onTick(secondsRemaining);
+                }
+            };
+
+            _this.getFormattedTime = function (milliseconds) {
+                if (_this.props.formatSecondsRemaining) {
+                    return _this.props.formatSecondsRemaining(milliseconds);
+                }
+
+                var remainingSec = Math.round(milliseconds / 1000);
+                var seconds = parseInt((remainingSec % 60).toString(), 10);
+                var minutes = parseInt((remainingSec / 60 % 60).toString(), 10);
+                var hours = parseInt((remainingSec / 3600).toString(), 10);
+                var s = seconds < 10 ? '0' + seconds : seconds;
+                var m = minutes < 10 ? '0' + minutes : minutes;
+                var h = hours < 10 ? '0' + hours : hours;
+                h = h === '00' ? '' : h + ':';
+                return h + m + ':' + s;
+            };
+
+            return _this;
+        }
+
+        _createClass(TimerCountdown, [{
+            key: "componentDidMount",
+            value: function componentDidMount() {
+                this.mounted = true;
+                this.tick();
+            }
+        }, {
+            key: "componentWillReceiveProps",
+            value: function componentWillReceiveProps(newProps) {
+                if (this.state.timeoutId) {
+                    clearTimeout(this.state.timeoutId);
+                }
+
+                this.setState({
+                    previousSeconds: null,
+                    secondsRemaining: newProps.initialSecondsRemaining
+                });
+            }
+        }, {
+            key: "componentDidUpdate",
+            value: function componentDidUpdate() {
+                if (!this.state.previousSeconds && this.state.secondsRemaining > 0 && this.mounted) {
+                    this.tick();
+                }
+            }
+        }, {
+            key: "componentWillUnmount",
+            value: function componentWillUnmount() {
+                this.mounted = false;
+                clearTimeout(this.state.timeoutId);
+            }
+        }, {
+            key: "render",
+            value: function render() {
+                var secondsRemaining = this.state.secondsRemaining;
+                var allowFontScaling = this.props.allowFontScaling;
+                var style = this.props.style;
+                return React.createElement(
+                    react_native_1.Text,
+                    {
+                        allowFontScaling: allowFontScaling,
+                        style: style,
+                        __source: {
+                            fileName: _jsxFileName,
+                            lineNumber: 93
+                        }
+                    },
+                    this.getFormattedTime(secondsRemaining)
+                );
+            }
+        }]);
+
+        return TimerCountdown;
+    }(React.Component));
+
+    TimerCountdown.defaultProps = {
+        interval: 1000,
+        formatSecondsRemaining: null,
+        onTick: null,
+        onTimeElapsed: null
+    };
+    exports.default = TimerCountdown;
+});

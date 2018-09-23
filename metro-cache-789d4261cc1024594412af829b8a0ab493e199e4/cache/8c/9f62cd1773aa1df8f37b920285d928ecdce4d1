@@ -1,0 +1,13 @@
+__d(function (global, _require, module, exports, _dependencyMap) {
+  module.exports = _require(_dependencyMap[0], "react-native/Libraries/Image/AssetRegistry").registerAsset({
+    "__packager_asset": true,
+    "httpServerLocation": "/assets/src/images",
+    "width": 219,
+    "height": 230,
+    "scales": [1],
+    "hash": "410380a72c4d4df4ab3c39fc3b6f17b2",
+    "name": "redx",
+    "type": "png",
+    "fileHashes": ["410380a72c4d4df4ab3c39fc3b6f17b2"]
+  });
+});

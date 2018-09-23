@@ -1,0 +1,36 @@
+__d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _redux = _require(_dependencyMap[0], "redux");
+
+  var INITIAL_STATE = {
+    current: [],
+    possible: [{
+      coordinate: {
+        latitude: 43.7860579,
+        longitude: -79.349437
+      },
+      title: "Great Bike Rack",
+      description: "Slots Available: 3",
+      free: 3,
+      capacity: 6,
+      color: "#E7E7E7"
+    }]
+  };
+
+  var rackReducer = function rackReducer() {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : INITIAL_STATE;
+    var action = arguments[1];
+
+    switch (action.type) {
+      default:
+        return state;
+    }
+  };
+
+  exports.default = (0, _redux.combineReducers)({
+    racks: rackReducer
+  });
+});
